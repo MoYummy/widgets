@@ -1,0 +1,73 @@
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>*{color:#fff;background-color:#333}</style></head><body><div id="root"></div>
+<script>
+Promise.resolve().then(async () => {
+  let vueMinJs = window.localStorage.getItem('vueMinJs');
+  if (!vueMinJs) {
+    const resp = await fetch('https://unpkg.com/vue@2.6.10/dist/vue.min.js');
+    vueMinJs = await resp.text();
+    window.localStorage.setItem('vueMinJs', vueMinJs);
+  }
+  eval(vueMinJs);
+
+  const { Vue } = window;
+  new Vue({ render: h => h({
+    template: `<div>
+    <select v-model="year">
+      <option v-for="y of yearRange">{{ y }}</option>
+    </select>
+    <select v-model="month">
+      <option v-for="m of monthRange">{{ m }}</option>
+    </select>
+    <select v-model="day">
+      <option v-for="d of dayRange">{{ d }}</option>
+    </select>
+    <div>{{ format(date) }}</div>
+    <input type="number" v-model="anniversary" placeholder="anniversary" />
+    <div>{{ format(anniversaryDate) }}</div>
+  </div>`,
+    data() {
+      return {
+        year: 2019,
+        month: 11,
+        day: 23,
+        anniversary: 1,
+        dayUnit: 24 * 60 * 60 * 1000,
+      }
+    },
+    computed: {
+      date() {
+        return new Date(this.year, this.month - 1, this.day);
+      },
+      anniversaryDate() {
+        return new Date(this.date.getTime() + this.anniversary * this.dayUnit);
+      },
+      yearRange() {
+        return Array.from({ length: 100 }, (_, i) => i + 1970)
+      },
+      monthRange() {
+        return Array.from({ length: 12 }, (_, i) => i + 1)
+      },
+      dayRange() {
+        return Array.from({ length: 31 }, (_, i) => i + 1)
+      },
+    },
+    methods: {
+      format(date) {
+        return date.toLocaleString('en-US', {
+          timeZone: 'Asia/Shanghai',
+          hour12: false,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          weekday: 'short',
+        })
+        .replace(/^([^,]+),\s*(\d{2})\/(\d{2})\/(\d{4}),.*$/, '$4-$2-$3 ($1)')
+      }
+    }
+  })}).$mount('#root')
+  
+});
+</script></body></html>
